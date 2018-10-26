@@ -13,7 +13,7 @@ const { getRandomNums } = require('../lib/util')
   }
 */
 module.exports = (robot) => {
-  robot.respond(/开始(.*)/,(res) => {
+  robot.respond(/^开始(.*)/,(res) => {
     const userList = res.match[1]
     console.log(res.envelope)
     room = res.envelope.user.name
@@ -59,9 +59,23 @@ module.exports = (robot) => {
     console.log(game)
     robot.brain.set(room, JSON.stringify(game))
     return res.reply(`
-      ${room} 的第${game.id}开始，
-      ${game.data}
+      ${room} 的第${game.id}场游戏开始，
+      jimczj: ${game.data.jimczj}
     `)
     // return res.reply(`准备开始游戏了哦${userList}`)
+  })
+  robot.respond(/^(结束|关闭)/, (res) => {
+	  room = res.envelope.user.name
+	  let game = robot.brain.get(room)
+	  if (game) {
+		  game = JSON.parse(game)
+		if (game.status === 'off') {
+			return res.reply(`您现在没有正在对战中的游戏`)
+		}
+		game.status = 'off'
+		robot.brain.set(room, JSON.stringify(game))
+		return res.reply(`您已成功关闭该轮游戏，可以回复【开始】并@其他游戏选手，开启一轮新的游戏`)
+	  }
+	return res.reply(`您现在没有正在对战中的游戏`)
   })
 }
