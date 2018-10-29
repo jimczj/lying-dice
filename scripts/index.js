@@ -1,4 +1,4 @@
-const { getRandomNums, getGame } = require('../lib/util')
+const { getRandomNums, getGame, setGame, judgeRules } = require('../lib/util')
 /*
   redis 数据结构
   记录下每局比赛数据信息
@@ -26,7 +26,6 @@ module.exports = (robot) => {
   // 开始游戏
   robot.respond(/开始(.*)/,(res) => {
     const userList = res.match[1]
-    console.log(res.envelope)
     room = res.envelope.user.name
     const players = ['jimczj','other'] // 假数据
     let game = robot.brain.get(room)
@@ -69,12 +68,11 @@ module.exports = (robot) => {
 
     for (const player of players) {
       // 设置玩家游戏房间，一个玩家只能同时在一个房间
-      robot.brain.set(player, JSON.stringify({ gamingRoom: room }))
+      setGame(robot, { gamingRoom: room })
       // 生成骰子数据
       game.data[player] = getRandomNums()
     }
-    console.log(game)
-    robot.brain.set(room, JSON.stringify(game))
+    setGame(robot, game)
     return res.reply(`
       ${room} 的第${game.id}场游戏开始，
       jimczj: ${game.data.jimczj}
@@ -95,7 +93,7 @@ module.exports = (robot) => {
         game = JSON.parse(robot.brain.get(room))
       }
       game.status = 'off'
-      robot.brain.set(room, JSON.stringify(game))
+      setGame(robot, game)
       return res.reply(`您已成功关闭${game.players}参与的游戏，回复【开始】并@其他游戏选手，开启新的一局游戏`)
     }
     return res.reply(`您现在没有正在对战中的游戏，回复【开始】并@其他游戏选手，开启新的一局游戏`)
@@ -111,30 +109,35 @@ module.exports = (robot) => {
     【斋】可以转【飞】状态，喊的数字要 + 人头个数
     【飞】可以转【斋】状态，喊的数字要 - （人头个数+1）
   */
- /*
-  人数：2
-  正确例子：
-  2个1
-  3个2
-  5个2 飞
-  7个3
-  错误例子：
-  2个1
-  2个2
-  4个2 飞
-  5个2
- */
   robot.hear(/([0-9]+)\s*个\s*([0-9])\s*([斋|飞])*/, (res) => {
     const username = res.envelope.user.name
-    const number = res.match[1]
-    const count = res.match[2]
-    const computeMode = res.match[3]
+    const number = parseInt(res.match[1])
+    const count = parseInt(res.match[2])
+    const computeModeStr = res.match[3]
     // const { n, number, count, computeMode } = res.match
-    console.log('number:',number,'count:',count)
+    console.log('number:', number, 'count:', count, 'computeMode:', computeMode)
     const game = getGame(robot,username)
     if (game && game.status === 'on') {
       // 判断数据是否符合规则
-      setGame(robot)
+      let computeMode = game.computeMode
+      if (computeModeStr && computeModeStr.contains('飞')) {
+        computeMode = 1
+      } else if (computeModeStr && computeModeStr.contains('斋')) {
+        computeMode = 0
+      }
+      const judgeResult = judgeRules(game, count, number, computeMode)
+      if (!judgeResult.result) {
+        return res.reply(judgeResult.message)
+      }
+      const current = game.current
+      game.number = number
+      game.count = count
+      game.computeMode = computeMode
+      game.current = current + 1 % game.players.length
+      setGame(robot, game)
+      return res.reply(`
+        玩家@${game.players[current]}喊了【${count}个${number}】，轮到@${game.players[game.current]}喊数
+      `)
     }
     res.reply('您现在没有正在进行的游戏')
   })
