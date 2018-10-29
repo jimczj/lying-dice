@@ -112,8 +112,8 @@ module.exports = (robot) => {
   */
   robot.hear(/([0-9]+)\s*个\s*([0-9])\s*([斋|飞])*/, (res) => {
     const username = res.envelope.user.name
-    const number = parseInt(res.match[1])
-    const count = parseInt(res.match[2])
+    const count = parseInt(res.match[1])
+    const number = parseInt(res.match[2])
     const computeModeStr = res.match[3]
     // const { n, number, count, computeMode } = res.match
     console.log('number:', number, 'count:', count, 'computeMode:', computeModeStr)
