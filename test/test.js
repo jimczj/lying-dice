@@ -1,6 +1,12 @@
 const assert = require('assert')
 const config = require('../config.json')
-const { judgeRules, getPlayers, getAllUserMap, getChannelUsersId } = require('../lib/util')
+const {
+  judgeRules,
+  getPlayers,
+  getAllUserMap,
+  getChannelUsersId,
+  getUserListName
+} = require('../lib/util')
 
 describe('utils', () => {
   describe('#judgeRules 第一次喊',  () => {
@@ -112,7 +118,7 @@ describe('utils', () => {
     })
 
     it('获取所有players', async () => {
-      const players = await getPlayers('lying-dice 开始 @group', config.channelId)
+      const players = await getPlayers('lying-dice 开始 @<-channel->', config.channelId)
       console.log(players)
       assert.equal(2, 2)
     })
@@ -132,4 +138,13 @@ describe('utils', () => {
       assert.equal(2, 2)
     })
   })
+  describe('#getUserListName', () => {
+    it('通过uid列表获取用户名列表', async () => {
+      const players = await getChannelUsersId(config.channelId)
+      const usernames = await getUserListName(players)
+      console.log(usernames)
+      assert.equal(2, 2)
+    })
+  })
+
 })
