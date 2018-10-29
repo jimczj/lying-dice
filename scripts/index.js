@@ -1,4 +1,4 @@
-const { getRandomNums, getGame, setGame, judgeRules } = require('../lib/util')
+const { getRandomNums, getGame, setGame, judgeRules, getAllUserMap, getChannelUsersId } = require('../lib/util')
 /*
   redis 数据结构
   记录下每局比赛数据信息
@@ -24,11 +24,12 @@ const { getRandomNums, getGame, setGame, judgeRules } = require('../lib/util')
 */
 module.exports = (robot) => {
   // 开始游戏
-  robot.respond(/开始(.*)/,(res) => {
-    const userList = res.match[1]
-    room = res.envelope.user.name
-    const players = ['jimczj','other'] // 假数据
-    let game = robot.brain.get(room)
+  robot.respond(/开始(.*)/,async (res) => {
+    const channelId = res.envelope.room.vchannelId
+    const username = res.envelope.user.name
+    const message = res.envelope.message.TextMessage.text
+    const players = await getPlayers(message, channelId)
+    let game = robot.brain.get(username)
     let gameId = 1
     if (game) {
       game = JSON.parse(game)
@@ -54,7 +55,7 @@ module.exports = (robot) => {
     }
     // 上一局已结束或用户没玩过游戏，开启新一局
     game = {
-      'owner': room,
+      'owner': username,
       'id': gameId,
       'players': players,
       'data': {
@@ -68,21 +69,21 @@ module.exports = (robot) => {
 
     for (const player of players) {
       // 设置玩家游戏房间，一个玩家只能同时在一个房间
-      setGame(robot, { gamingRoom: room })
+      setGame(robot, { gamingRoom: username })
       // 生成骰子数据
       game.data[player] = getRandomNums()
     }
     setGame(robot, game)
     return res.reply(`
-      ${room} 的第${game.id}场游戏开始，
+      ${username} 的第${game.id}场游戏开始，
       jimczj: ${game.data.jimczj}
     `)
     // return res.reply(`准备开始游戏了哦${userList}`)
   })
   // 结束游戏
   robot.respond(/(结束|关闭)/, (res) => {
-    room = res.envelope.user.name
-    let game = robot.brain.get(room)
+    username = res.envelope.user.name
+    let game = robot.brain.get(username)
     if (game) {
       game = JSON.parse(game)
       if (game.status === 'off') {
@@ -90,7 +91,7 @@ module.exports = (robot) => {
       }
       // 在其他人的房间里，也可以关闭该轮游戏
       if (game.gamingRoom) {
-        game = JSON.parse(robot.brain.get(room))
+        game = JSON.parse(robot.brain.get(username))
       }
       game.status = 'off'
       setGame(robot, game)
@@ -115,9 +116,13 @@ module.exports = (robot) => {
     const count = parseInt(res.match[2])
     const computeModeStr = res.match[3]
     // const { n, number, count, computeMode } = res.match
-    console.log('number:', number, 'count:', count, 'computeMode:', computeMode)
+    console.log('number:', number, 'count:', count, 'computeMode:', computeModeStr)
     const game = getGame(robot,username)
     if (game && game.status === 'on') {
+      // 判断发言人
+      if (username !== game.player[game.current]) {
+        return res.reply(`还没轮到你哦，现在是由@${game.player[game.current]}回答`)
+      }
       // 判断数据是否符合规则
       let computeMode = game.computeMode
       if (computeModeStr && computeModeStr.contains('飞')) {
