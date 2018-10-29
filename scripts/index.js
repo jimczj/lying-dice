@@ -1,4 +1,4 @@
-const { getRandomNums, getGame, setGame, judgeRules, getAllUserMap, getChannelUsersId } = require('../lib/util')
+const { getRandomNums, getGame, setGame, judgeRules, getPlayers } = require('../lib/util')
 /*
   redis 数据结构
   记录下每局比赛数据信息
@@ -25,9 +25,10 @@ const { getRandomNums, getGame, setGame, judgeRules, getAllUserMap, getChannelUs
 module.exports = (robot) => {
   // 开始游戏
   robot.respond(/开始(.*)/,async (res) => {
+
     const channelId = res.envelope.room.vchannelId
     const username = res.envelope.user.name
-    const message = res.envelope.message.TextMessage.text
+    const message = res.match[1]
     const players = await getPlayers(message, channelId)
     let game = robot.brain.get(username)
     let gameId = 1
