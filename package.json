@@ -5,7 +5,8 @@
   "author": "jimczj <jimczj@gmail.com>",
   "description": "大话骰子游戏",
   "scripts": {
-    "start": "./start.sh"
+    "start": "./start.sh",
+    "test": "mocha"
   },
   "dependencies": {
     "hubot": "^3.1.1",
@@ -24,5 +25,8 @@
   },
   "engines": {
     "node": "0.10.x"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
   }
 }
