@@ -106,19 +106,18 @@ describe('utils', () => {
 
   describe('#getPlayers', () => {
     it('正常获取players', async () => {
-      const players = await getPlayers('lying-dice 开始 @jimczj @gmail', config.channelId)
+      const players = await getPlayers('@<==bxcMX=> 开始 @<==bxc4Z=>', config.channelId)
       console.log(players)
       assert.equal(players[0],'jimczj')
-      assert.equal(players[1], 'gmail')
     })
 
     it('获取空players', async () => {
-      const players = await getPlayers('lying-dice 开始', config.channelId)
+      const players = await getPlayers('@<==bxc4Z=> 开始 ', config.channelId)
       assert.equal(players.length, 0)
     })
 
     it('获取所有players', async () => {
-      const players = await getPlayers('lying-dice 开始 @<-channel->', config.channelId)
+      const players = await getPlayers('@<==bxcMX=> 开始 @<-channel->', config.channelId)
       console.log(players)
       assert.equal(2, 2)
     })
