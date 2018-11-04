@@ -42,7 +42,7 @@ module.exports = (robot) => {
 
     const channelId = res.envelope.room.vchannelId
     const username = res.envelope.user.name
-    const message = res.envelope.user.message.text
+    const message = res.envelope.user.message.text
     const players = await getPlayers(message, channelId)
     let game = robot.brain.get(username)
     let gameId = 1
