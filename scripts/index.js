@@ -170,12 +170,57 @@ module.exports = (robot) => {
   }
 */
   // 进行游戏中 往上叠加
-  robot.hear(/\+\s*([0-9]+)/, (res) => {
-    const num = res.match[1]
-    return res.reply(`居然敢叫这么多+${num}`)
+  robot.hear(/\+\s*([0-9]+)\s*([斋|飞])/, (res) => {
+    const username = res.envelope.user.name
+    const count = parseInt(res.match[1])
+    let computeMode = res.match[2]
+    if (computeMode === '斋') {
+      computeMode = 0
+    } else {
+      computeMode = 1
+    }
+    const game = getGame(robot, username)
+    if (game && game.status === 'on') {
+      const judgeResult = judgeRules(game, game.count + count, game.number, computeMode)
+      if (!judgeResult.result) {
+        return res.reply(judgeResult.message)
+      }
+      const current = game.current
+      game.count = game.count + count
+      game.computeMode = computeMode
+      game.current = current + 1 % game.players.length
+      setGame(robot, game)
+      return res.reply(`
+        玩家@${game.players[current]}喊了【${count}个${number}】，轮到@${game.players[game.current]}喊数
+      `)
+    }
+    return res.reply('您现在没有正在进行的游戏')
   })
   // 玩家喊开，结束游戏
   robot.respond(/开$/, (res) => {
+    const username = res.envelope.user.name
+    const game = getGame(robot, username)
+    if (game && game.status === 'on') {
+      const numCount = {
+        '1': 0,
+        '2': 0,
+        '3': 0,
+        '4': 0,
+        '5': 0,
+        '6': 0
+      }
+      Object.values(game.data).forEach(arr => {
+        arr.forEach(num => {
+          numCount[num]++
+        })
+      })
+      if (numCount[game.number] >= game.count) {
+        return res.reply(`
+        ${game.number}共有${numCount[game.number]}个，恭喜【${username}】 你【赢】了。
+        `)
+      }
+      return res.reply(`${game.number}共有${numCount[game.number]}个，对不起【${username}】 你【输】了。`)
+    }
     return res.reply(`结束游戏`)
   })
 }
