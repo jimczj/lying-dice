@@ -23,6 +23,20 @@ const { getRandomNums, getGame, setGame, judgeRules, getPlayers } = require('../
   }
 */
 module.exports = (robot) => {
+
+  robot.respond(/(帮助|help)/, (res) => {
+    return res.reply(`
+    大话骰游戏规则：
+    【1】 喊的个数最少为人头个数，此时为【斋】状态，只计算【1】的个数
+    【2，3，4，5，6】喊的个数最少为人头个数 + 1，此时为【斋】状态，只计算喊的数字的个数
+    【2，3，4，5，6】 喊的个数最少为人头个数 + 2，此时为【飞】状态，除了计算喊的数字个数，还计算【1】的个数
+    下一轮选手喊的数字或个数要大于上一轮的选手，【1】除外(可以理解【1】最大)，比如：6个1 > 5个1 ，6个1 > 6个3 > 6个2
+    【斋】状态时，只计算喊的数字的个数，
+    【飞】状态时，除了计算喊的数字个数，还计算【1】的个数
+    【斋】可以转【飞】状态，喊的数字要 + 人头个数
+    【飞】可以转【斋】状态，喊的数字要 - 人头个数 + 1
+    `)
+  })
   // 开始游戏
   robot.respond(/开始(.*)/,async (res) => {
 
@@ -76,8 +90,7 @@ module.exports = (robot) => {
     }
     setGame(robot, game)
     return res.reply(`
-      ${username} 的第${game.id}场游戏开始，
-      jimczj: ${game.data.jimczj}
+      ${username} 的第${game.id}场游戏开始
     `)
     // return res.reply(`准备开始游戏了哦${userList}`)
   })
