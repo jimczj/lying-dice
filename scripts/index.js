@@ -202,7 +202,7 @@ module.exports = (robot) => {
       game.current = current + 1 % game.players.length
       setGame(robot, game)
       return res.reply(`
-        玩家@${game.players[current]}喊了【${count}个${game.number}】，轮到@${game.players[game.current]}喊数
+        玩家@${game.players[current]}喊了【${game.count}个${game.number}】，轮到@${game.players[game.current]}喊数
       `)
     }
     return res.reply('您现在没有正在进行的游戏')
