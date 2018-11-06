@@ -181,7 +181,7 @@ module.exports = (robot) => {
   }
 */
   // 进行游戏中 往上叠加
-  robot.hear(/\+\s*([0-9]+)\s*([斋|飞])/, async (res) => {
+  robot.hear(/\+\s*([0-9]+)\s*([斋|飞])*/, async (res) => {
     console.log('++++++')
     const username = await getUsername(res.envelope.user.name)
     const count = parseInt(res.match[1])
