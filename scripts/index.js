@@ -1,4 +1,4 @@
-const { getRandomNums, getGame, setGame, judgeRules, getPlayers } = require('../lib/util')
+const { getRandomNums, getGame, setGame, judgeRules, getPlayers, getUsername } = require('../lib/util')
 /*
   redis 数据结构
   记录下每局比赛数据信息
@@ -41,7 +41,7 @@ module.exports = (robot) => {
   robot.respond(/开始(.*)/,async (res) => {
 
     const channelId = res.envelope.room.vchannelId
-    const username = res.envelope.user.name
+    const username = await getUsername(res.envelope.user.name)
     const message = res.envelope.user.message.text
     const players = await getPlayers(message, channelId)
     let game = robot.brain.get(username)
@@ -95,8 +95,8 @@ module.exports = (robot) => {
     // return res.reply(`准备开始游戏了哦${userList}`)
   })
   // 结束游戏
-  robot.respond(/(结束|关闭)/, (res) => {
-    username = res.envelope.user.name
+  robot.respond(/(结束|关闭)/, async (res) => {
+    const username = await getUsername(res.envelope.user.name)
     let game = robot.brain.get(username)
     if (game) {
       game = JSON.parse(game)
@@ -124,13 +124,11 @@ module.exports = (robot) => {
     【斋】可以转【飞】状态，喊的数字要 + 人头个数
     【飞】可以转【斋】状态，喊的数字要 - （人头个数+1）
   */
-  robot.hear(/([0-9]+)\s*个\s*([0-9])\s*([斋|飞])*/, (res) => {
-    const username = res.envelope.user.name
+  robot.hear(/([0-9]+)\s*个\s*([0-9])\s*([斋|飞])*/, async (res) => {
+    const username = await getUsername(res.envelope.user.name)
     const count = parseInt(res.match[1])
     const number = parseInt(res.match[2])
     const computeModeStr = res.match[3]
-    // const { n, number, count, computeMode } = res.match
-    console.log('number:', number, 'count:', count, 'computeMode:', computeModeStr)
     const game = getGame(robot,username)
     if (game && game.status === 'on') {
       // 判断发言人
@@ -183,8 +181,8 @@ module.exports = (robot) => {
   }
 */
   // 进行游戏中 往上叠加
-  robot.hear(/\+\s*([0-9]+)\s*([斋|飞])/, (res) => {
-    const username = res.envelope.user.name
+  robot.hear(/\+\s*([0-9]+)\s*([斋|飞])/, async (res) => {
+    const username = await getUsername(res.envelope.user.name)
     const count = parseInt(res.match[1])
     let computeMode = res.match[2]
     if (computeMode === '斋') {
@@ -210,8 +208,8 @@ module.exports = (robot) => {
     return res.reply('您现在没有正在进行的游戏')
   })
   // 玩家喊开，结束游戏
-  robot.respond(/开$/, (res) => {
-    const username = res.envelope.user.name
+  robot.respond(/开$/, async (res) => {
+    const username = await getUsername(res.envelope.user.name)
     const game = getGame(robot, username)
     if (game && game.status === 'on') {
       const numCount = {
