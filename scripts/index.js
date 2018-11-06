@@ -137,9 +137,9 @@ module.exports = (robot) => {
       }
       // 判断数据是否符合规则
       let computeMode = game.computeMode
-      if (computeModeStr && computeModeStr.contains('飞')) {
+      if (computeModeStr && computeModeStr.includes('飞')) {
         computeMode = 1
-      } else if (computeModeStr && computeModeStr.contains('斋')) {
+      } else if (computeModeStr && computeModeStr.includes('斋')) {
         computeMode = 0
       }
       const judgeResult = judgeRules(game, count, number, computeMode)
