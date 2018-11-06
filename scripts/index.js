@@ -182,7 +182,6 @@ module.exports = (robot) => {
 */
   // 进行游戏中 往上叠加
   robot.hear(/\+\s*([0-9]+)\s*([斋|飞])*/, async (res) => {
-    console.log('++++++')
     const username = await getUsername(res.envelope.user.name)
     const count = parseInt(res.match[1])
     let computeMode = res.match[2]
@@ -203,7 +202,7 @@ module.exports = (robot) => {
       game.current = current + 1 % game.players.length
       setGame(robot, game)
       return res.reply(`
-        玩家@${game.players[current]}喊了【${count}个${number}】，轮到@${game.players[game.current]}喊数
+        玩家@${game.players[current]}喊了【${count}个${game.number}】，轮到@${game.players[game.current]}喊数
       `)
     }
     return res.reply('您现在没有正在进行的游戏')
