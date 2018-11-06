@@ -185,10 +185,10 @@ module.exports = (robot) => {
     const username = await getUsername(res.envelope.user.name)
     const count = parseInt(res.match[1])
     let computeMode = res.match[2]
-    if (computeMode === '斋') {
-      computeMode = 0
-    } else {
+    if (computeMode === '飞') {
       computeMode = 1
+    } else {
+      computeMode = 0
     }
 
     const game = getGame(robot, username)
