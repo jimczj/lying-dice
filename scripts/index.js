@@ -134,8 +134,8 @@ module.exports = (robot) => {
     const game = getGame(robot,username)
     if (game && game.status === 'on') {
       // 判断发言人
-      if (username !== game.player[game.current]) {
-        return res.reply(`还没轮到你哦，现在是由@${game.player[game.current]}回答`)
+      if (username !== game.players[game.current]) {
+        return res.reply(`还没轮到你哦，现在是由@${game.players[game.current]}回答`)
       }
       // 判断数据是否符合规则
       let computeMode = game.computeMode
@@ -232,6 +232,8 @@ module.exports = (robot) => {
         ${game.number}共有${numCount[game.number]}个，恭喜【${username}】 你【赢】了。
         `)
       }
+      game.status = 'off'
+      setGame(robot, game)
       return res.reply(`${game.number}共有${numCount[game.number]}个，对不起【${username}】 你【输】了。`)
     }
     return res.reply(`结束游戏`)
