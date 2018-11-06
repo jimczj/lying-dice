@@ -90,7 +90,7 @@ module.exports = (robot) => {
     }
     setGame(robot, game)
     return res.reply(`
-      ${username} 的第${game.id}场游戏开始
+      ${username} 的第${game.id}场游戏开始,由【${game.players[game.current]}】先喊数
     `)
     // return res.reply(`准备开始游戏了哦${userList}`)
   })
