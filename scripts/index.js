@@ -190,8 +190,13 @@ module.exports = (robot) => {
     } else {
       computeMode = 1
     }
+
     const game = getGame(robot, username)
     if (game && game.status === 'on') {
+      // 判断发言人
+      if (username !== game.players[game.current]) {
+        return res.reply(`还没轮到你哦，现在是由@${game.players[game.current]}回答`)
+      }
       const judgeResult = judgeRules(game, game.count + count, game.number, computeMode)
       if (!judgeResult.result) {
         return res.reply(judgeResult.message)
@@ -208,10 +213,14 @@ module.exports = (robot) => {
     return res.reply('您现在没有正在进行的游戏')
   })
   // 玩家喊开，结束游戏
-  robot.respond(/开$/, async (res) => {
+  robot.hear(/开$/, async (res) => {
     const username = await getUsername(res.envelope.user.name)
     const game = getGame(robot, username)
     if (game && game.status === 'on') {
+      // 判断发言人
+      if (username !== game.players[game.current]) {
+        return res.reply(`还没轮到你哦，现在是由@${game.players[game.current]}回答`)
+      }
       const numCount = {
         '1': 0,
         '2': 0,
